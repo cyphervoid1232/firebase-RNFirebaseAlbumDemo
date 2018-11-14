@@ -3,6 +3,9 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import firebase from 'react-native-firebase'
+
+const firestore = firebase.firestore()
 
 import AlbumHeader from './AlbumHeader';
 import CommentList from './CommentList';
@@ -25,28 +28,54 @@ class AlbumDetailScreen extends React.Component {
     comments: [],
   };
 
-  getAlbum() {
-    // TODO: get album data from Firestore
+  subscribeToAlbum() {
+    const { navigation } = this.props
+    const albumId = navigation.getParam('albumId')
+    const docRef = firestore.collection('albums').doc(albumId)
+    // docRef.get().then((doc) => {
+    //   this.setState({ album: doc.data() })
+    // })
+
+    this.albumSubscription = docRef.onSnapshot((doc) => {
+      this.setState({ album: doc.data() })
+    })
+
   }
 
   subscribeToComment() {
-    // TODO: subscribe to Firestore for comment
+    const { navigation } = this.props
+    const albumId = navigation.getParam('albumId')
+    const collection = firestore.collection('albums')
+      .doc(albumId)
+      .collection('comments')
+    this.commentSubscription = collection.onSnapshot((snapshot) => {
+      this.updateCommentState(snapshot.docs)
+    })
   }
 
-  updateCommentState() {
-    // TODO: convert data to correct format & update state
+  updateCommentState(docs) {
+    const comments = docs.map((doc) => ({
+      _id: doc.id,
+      ...doc.data()
+    }))
+    this.setState({ comments })
   }
 
   unsubscribeFromComment() {
-    // TODO: unsubscribe from Firestore
+    // this.albumSubscription()
+  }
+
+  unsubscribeFromAlbum() {
+    this.albumSubscription()
   }
 
   componentDidMount() {
-    this.getAlbum();
+    this.subscribeToAlbum();
     this.subscribeToComment();
   }
 
   componentWillUnmount() {
+    this.unsubscribeFromAlbum()
     this.unsubscribeFromComment();
   }
 

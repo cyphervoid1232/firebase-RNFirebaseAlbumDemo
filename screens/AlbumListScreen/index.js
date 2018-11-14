@@ -1,4 +1,7 @@
 import React from 'react';
+import firebase from 'react-native-firebase';
+
+const firestore = firebase.firestore();
 
 import AlbumList from './AlbumList';
 import NoDataPlaceholder from './NoDataPlaceholder';
@@ -56,19 +59,28 @@ class AlbumListScreen extends React.Component {
   };
 
   addAlbum(album) {
-    // TODO: Add an album to Firestore
+    const collection = firestore.collection('albums');
+    collection.add(album);
   }
 
   subscribeToFirestore() {
-    // TODO: Retrieve list of albums to firestore
+    const collection = firestore.collection('albums');
+    this.subscription = collection.onSnapshot(snapshot => {
+      this.updateState(snapshot.docs)
+    })
   }
 
   updateState(docs) {
-    // TODO: Convert data to correct format & setState
+    const albumList = docs.map((doc) => ({
+      _id: doc.id,
+      ...doc.data()
+    }))
+
+    this.setState({ albumList })
   }
 
   unsubscribeFromFirestore() {
-    // TODO: unsubscribe from Firestore
+    this.subscription()
   }
 
   componentDidMount() {
@@ -76,7 +88,7 @@ class AlbumListScreen extends React.Component {
   }
 
   componentWillUnmount() {
-     this.unsubscribeFromFirestore();
+    this.unsubscribeFromFirestore();
   }
 
   addMockData = () => {
