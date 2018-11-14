@@ -26,9 +26,8 @@ class AddCommentScreen extends React.Component {
     const { comment } = this.state
     const { navigation } = this.props
     const albumId = navigation.getParam('albumId')
-    const collection = firestore.collection('albums')
-      .doc(albumId)
-      .collection('comments')
+    const albumRef = firestore.collection('albums').doc(albumId)
+    const collection = albumRef.collection('comments')
 
     firestore.runTransaction((t) => { //t similar firestore lite
       return t.get(albumRef).then((albumDoc) => {
@@ -45,7 +44,7 @@ class AddCommentScreen extends React.Component {
 
         const newCommentRef = collection.doc()
         return Promise.all([
-          t.set(newCommentRef, {
+          t.set(newCommentRef, {  
             ...comment,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
           }),

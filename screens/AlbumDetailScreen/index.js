@@ -48,6 +48,11 @@ class AlbumDetailScreen extends React.Component {
     const collection = firestore.collection('albums')
       .doc(albumId)
       .collection('comments')
+      .where('name', '==', 'Test rating')
+      .orderBy('timestamp', 'desc')
+      // .where('rating', '>',4)
+      // .where('timestamp', '>', 0)
+      // .orderBy('timestamp', 'desc')
     this.commentSubscription = collection.onSnapshot((snapshot) => {
       this.updateCommentState(snapshot.docs)
     })
